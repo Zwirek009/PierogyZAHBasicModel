@@ -1,0 +1,100 @@
+## ams_version=1.0
+
+Model Main_Pierogy {
+    Set Fabryki {
+        Index: f;
+    }
+    Set Sklepy {
+        Index: s;
+    }
+    Set Rodzaje_pierogow {
+        Index: r;
+    }
+    Set Dni_pracy {
+        Index: d;
+    }
+    Parameter Cena {
+        IndexDomain: (r,s);
+    }
+    Parameter Zapotrzebowanie {
+        IndexDomain: (d,r,s);
+    }
+    Parameter Koszt_produkcji {
+        IndexDomain: (f,r);
+    }
+    Parameter Maksymalna_produkcja {
+        IndexDomain: (f,r);
+    }
+    Variable a {
+        IndexDomain: (d,r,s);
+        Range: integer;
+        Comment: "Ilosc sprzedanych w dniu d pierogow rodzaju r w sklepie s";
+    }
+    Constraint Ogr_na_popyt {
+        IndexDomain: (d,r,s);
+        Definition: a(d,r,s)<=Zapotrzebowanie(d,r,s);
+        Comment: "Nie można sprzedać więcej niż jest popyt.";
+    }
+    Constraint Ogr_na_produkcje {
+        IndexDomain: (d,f,r);
+        Definition: sum[s, x(d,f,r,s)]<=Maksymalna_produkcja(f,r);
+        Comment: "Nie można wyprodukować dziennie w fabryce f więcej niż Mfr pierogów.";
+    }
+    Constraint Ogr_na_sume_sprzedanych {
+        IndexDomain: (d,r,s);
+        Definition: a(d,r,s)=sum[f, x(d,f,r,s)];
+        Comment: "Suma sprzedanych pierogów w sklepie s jest równa liczbie wyprodukowanych pierogów dla tego sklepu przez wszystkie fabryki w ciągu tego samego dnia.";
+    }
+    Variable x {
+        IndexDomain: (d,f,r,s);
+        Range: integer;
+        Comment: "Ilosc wyprodukowanych w dniu d w fabryce f pierogow rodzaju r dla sklepu s";
+    }
+    Variable Zysk_pdst {
+        Range: free;
+        Definition: sum[s, sum[r, sum[d, Cena(r,s)*a(d,r,s)]]]-sum[r, sum[s, sum[f, sum[d, Koszt_produkcji(f,r)*x(d,f,r,s)]]]];
+        Comment: "Łączny zysk = łączny przychód - łączny koszt (ew sum[(s,r,d), formula])";
+    }
+    MathematicalProgram Maksymalizacja_zysku {
+        Objective: Zysk_pdst;
+        Direction: maximize;
+        Constraints: AllConstraints;
+        Variables: AllVariables;
+        Type: Automatic;
+    }
+    Procedure MainInitialization {
+        Comment: "Add initialization statements here that do NOT require any library being initialized already.";
+    }
+    Procedure PostMainInitialization {
+        Comment: {
+            "Add initialization statements here that require that the libraries are already initialized properly,
+            or add statements that require the Data Management module to be initialized."
+        }
+    }
+    Procedure MainExecution {
+        Body: {
+            solve Maksymalizacja_zysku;
+        }
+    }
+    Procedure PreMainTermination {
+        Body: {
+            return DataManagementExit();
+        }
+        Comment: {
+            "Add termination statements here that require all libraries to be still alive.
+            Return 1 if you allow the termination sequence to continue.
+            Return 0 if you want to cancel the termination sequence."
+        }
+    }
+    Procedure MainTermination {
+        Body: {
+            return 1;
+        }
+        Comment: {
+            "Add termination statements here that do not require all libraries to be still alive.
+            Return 1 to allow the termination sequence to continue.
+            Return 0 if you want to cancel the termination sequence.
+            It is recommended to only use the procedure PreMainTermination to cancel the termination sequence and let this procedure always return 1."
+        }
+    }
+}

@@ -1,0 +1,8 @@
+Warning at line 1 in user-defined function section "MainExecution".
+The parameter "Cena" is not initialized (default values are used).
+Warning at line 1 in user-defined function section "MainExecution".
+The parameter "Koszt_produkcji" is not initialized (default values are used).
+Warning at line 1 in user-defined function section "MainExecution".
+The parameter "Zapotrzebowanie" is not initialized (default values are used).
+Warning at line 1 in user-defined function section "MainExecution".
+The parameter "Maksymalna_produkcja" is not initialized (default values are used).
